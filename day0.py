@@ -30,16 +30,20 @@ def getPassword2():
         for line in f:
             # format is [L,R][1-99]
             direction, amount = line[0], int(line[1:])
-            print(direction)
-            print(amount)
+            password += amount // 100 
+            print(direction + str(amount))
+            amount = amount % 100
             if direction == 'R':
-                password += (start + amount) // 100
+                if start + amount > 99:
+                    if start != 0:
+                        password += 1
                 start = (start + amount) % 100
             else:
-                password += (amount - start + 99) // 100
+                if start - amount <= 0:
+                    if start != 0:
+                        password += 1
                 start = (start - amount) % 100
-            print(start)
-            print("-----")
+            print("result", int(start))
     print(password)
 
 getPassword2()
