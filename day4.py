@@ -28,24 +28,36 @@ def freshCount():
 
     return count
 
-print(freshCount())
+#print(freshCount())
 
 # Part 2: how many ingredient IDs are considered fresh according to the ID ranges?
 
 def freshCount2():
+    ranges = True
     safe = set()
     count = 0
     with open('input4', 'r') as f:
         for line in f:
-            if line == '\n':
-                break
-            start, end = line.split('-')
-            start, end = int(start),int(end)
-            chunkSize = 1000
-            for chunkStart in range(start, end+1, chunkSize):
-                chunkEnd = min(chunkStart + chunkSize -1, end)
-                safe.update(range(chunkStart, chunkEnd+1))
-    return len(safe)
+            if ranges:
+                # building safe set
+                if line == '\n':
+                    ranges = False
+                else:
+                    start, end = line.split('-')
+                    safe.add(range(int(start),int(end)+1))
+            else:
+                # check IDs
+                for safelist in safe:
+                    seen = set()
+                    for safeVal in safelist:
+                        if safeVal in seen:
+                            continue
+                        count += 1
+                        seen.add(safeVal)
+
+            print('.')
+
+    return count
 
 print(freshCount2())
 
