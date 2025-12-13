@@ -60,6 +60,7 @@ def numPaths():
     with open('input6', 'r') as f:
         for line in f:
             grid.append(list(line.strip()))
+    # keep a counter of the number of times a cell is reached
     pathCounts = [[0] * len(grid[0]) for _ in range(len(grid))]
     pathCounts[0][grid[0].index('S')] = 1
     i=1
