@@ -52,6 +52,43 @@ def numSplits():
 
 print(numSplits())
 
+# part 2: how many different timelines exist for a single path?
+# i.e could go left or right at each splitter, how many unique paths?
+
+def numPaths():
+    grid = []
+    with open('input6', 'r') as f:
+        for line in f:
+            grid.append(list(line.strip()))
+    pathCounts = [[0] * len(grid[0]) for _ in range(len(grid))]
+    pathCounts[0][grid[0].index('S')] = 1
+    i=1
+    while i < len(grid):
+        y=0
+        while y < len(grid[0]):
+            if pathCounts[i-1][y]:
+                if grid[i][y] == '^':
+                    if y < len(grid)-1:
+                        pathCounts[i][y+1] += pathCounts[i-1][y]
+                    if y > 0:
+                        pathCounts[i][y-1] += pathCounts[i-1][y]
+                else:
+                    pathCounts[i][y] += pathCounts[i-1][y]
+            y+=1
+        i+=1
+
+    for row in pathCounts:
+        print()
+        for val in row:
+            print(val, end='')
+    print()
+
+    return sum(pathCounts[-1])
+
+print("FINAL ANSWER")
+print(numPaths())
+
+
 
 
 
