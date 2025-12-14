@@ -77,4 +77,79 @@ def getMinButtons():
     return sum(minimums)
 
 
-print(f"\nSUM OF MINIMUMS = {getMinButtons()}")
+#print(f"\nSUM OF MINIMUMS = {getMinButtons()}")
+
+# Part 2:
+# This time use Z3.
+from z3 import *
+
+def getMinButtons2():
+    # key: goal config, value: button config
+    machines = []
+    buttonsIN = []
+    with open('input9','r') as f:
+        for line in f:
+            sections = line.split(' ')
+            machines.append(sections[-1])
+            buttonsIN.append(sections[1:-1])
+    
+    minimums = []
+    for btnidx,machine in enumerate(machines):
+        buttons = buttonsIN[btnidx]
+
+        # remove brackets
+        machine = machine.strip()[1:-1]
+        # [0,2,5,0]
+        targetVect = list(map(int,machine.split(',')))
+        print(f"Trying machine {machine}")
+        # [0,0,0,0]
+        baseVect = [0]*len(machine)
+        # list of indexes which are flipped by this button.
+        buttonsFixed = []
+        for button in buttons:
+            buttonsFixed.append(list(map(int,button[1:-1].split(','))))
+        buttons = buttonsFixed
+        # turn button into vectors of a matrix
+        buttMatrix = []
+        for button in buttons:
+            buttVect = baseVect.copy()
+            for val in button:
+                buttVect[val] = 1
+            buttMatrix.append(buttVect)
+        # we multiply this matrix with a press vector
+        # we want the result to be the same as the target vector (the goal voltages)
+        # as this is much more complex than part 1: use Z3 solver to solve the equation, rather than iterate over possible press vectors.
+
+        # Solving for a system of linear equations Ax=b, where the unkown is vector x.
+        # Setting the unkown vector in S3 solver
+        s = Optimize()
+        unkownVector = [Int(f'x{i}') for i in range(len(buttMatrix))]
+        # must be positive integer
+        for i,component in enumerate(unkownVector):
+            s.add(component >= 0)
+        for i in range(len(targetVect)):
+            constraint = 0
+            # j = light idx
+            for j in range(len(unkownVector)):
+                # Build constraint to add to solver
+                coeff = IntVal(buttMatrix[j][i])
+                constraint += coeff * unkownVector[j]
+            s.add(constraint == targetVect[i])
+        print(s.assertions())
+        # must minimise, not just any solution
+        s.minimize(sum(unkownVector))
+        # check if solvable
+        if s.check() == sat:
+            # if solvable, get solution
+            m = s.model()
+            pVect = [m[x].as_long() for x in unkownVector]
+            print(f"SOLUTION {pVect}")
+            # add total presses to satisfy to minimums.
+            minimums.append(sum(pVect))
+        else:
+            print("Failed")
+
+    # return minimum presses to satisfy all machine's requirements for voltage. 
+    return sum(minimums)
+
+print(f"\nSUM OF MINIMUMS = {getMinButtons2()}")
